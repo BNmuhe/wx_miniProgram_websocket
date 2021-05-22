@@ -4,7 +4,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class WebSocketUtils {
     private static final ConcurrentHashMap<Integer,WebSocketServer> websocketClients=new ConcurrentHashMap<Integer, WebSocketServer>();
-    private static final ConcurrentHashMap<Integer,WebSocketSingleLink> websocketSingleLinks=new ConcurrentHashMap<Integer, WebSocketSingleLink>();
+    private static final ConcurrentHashMap<Integer, WebSocketMessageList> websocketSingleLinks=new ConcurrentHashMap<Integer, WebSocketMessageList>();
 
 
     public static void sendMessageByUser(int userID,String message){
@@ -20,7 +20,7 @@ public class WebSocketUtils {
         return websocketClients;
     }
 
-    public static ConcurrentHashMap<Integer, WebSocketSingleLink> getWebsocketSingleLinks() {
+    public static ConcurrentHashMap<Integer, WebSocketMessageList> getWebsocketSingleLinks() {
         return websocketSingleLinks;
     }
 }

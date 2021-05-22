@@ -1,9 +1,7 @@
 package com.websocket;
 
-import com.ConnectionToDB.Chat;
 import com.ConnectionToDB.ChatUtils;
-import com.ConnectionToDB.GetHistoryMessageFromDB;
-import com.ConnectionToDB.GetLastMessageFromDB;
+import com.ConnectionToDB.MessageUtils;
 import com.alibaba.fastjson.JSON;
 
 import javax.websocket.*;
@@ -11,10 +9,9 @@ import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 import java.sql.SQLException;
 import java.util.HashMap;
-import java.util.Vector;
 
 @ServerEndpoint("/websocketMessageList/{userID}")
-public class WebSocketSingleLink {
+public class WebSocketMessageList {
 
     private int userID;
     private Session session;
@@ -35,7 +32,7 @@ public class WebSocketSingleLink {
 
         //获取所有历史消息中的最新消息，并发送
 
-        HashMap<Integer,String> lastMessages= GetLastMessageFromDB.getLastMessages(this.userID);
+        HashMap<Integer,String> lastMessages= MessageUtils.getLastMessages(this.userID);
 
         String str=JSON.toJSONString(lastMessages);
 
@@ -59,7 +56,7 @@ public class WebSocketSingleLink {
      */
     @OnClose
     public void onClose(){
-
+        WebSocketUtils.getWebsocketSingleLinks().remove(this.userID);
         System.out.println(this.userID+"离开界面");
     }
 

@@ -38,8 +38,8 @@ public class WebSocketServer {
 
         //从数据库获取历史消息
         try{
-            GetHistoryMessageFromDB.getFromDB(this.userID, targetID);
-            historyMessages= GetHistoryMessageFromDB.getHistoryMessages();
+            MessageUtils.getFromDB(this.userID, targetID);
+            historyMessages= MessageUtils.getHistoryMessages();
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -52,7 +52,7 @@ public class WebSocketServer {
             String str= JSON.toJSONString(historyMessages);
             this.session.getAsyncRemote().sendText(str);
 
-            GetHistoryMessageFromDB.getHistoryMessages().removeAllElements();
+            MessageUtils.getHistoryMessages().removeAllElements();
         }
 
 
@@ -93,7 +93,7 @@ public class WebSocketServer {
         //消息存入数据库
         DBMessage dbMessage=new DBMessage();
         dbMessage.MessageToDBMessage(message1);
-        SendHistoryMessageToDB.sendToDB(dbMessage);
+        MessageUtils.sendToDB(dbMessage);
         //对方不在线时，存入未读消息数据库
         if(WebSocketUtils.getWebsocketClients().getOrDefault(message1.getTo_id(),null)==null){
             //将未读消息记录增加
