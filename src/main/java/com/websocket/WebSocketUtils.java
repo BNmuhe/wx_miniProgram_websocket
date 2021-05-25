@@ -9,10 +9,7 @@ public class WebSocketUtils {
 
     public static void sendMessageByUser(int userID,String message){
 
-
         websocketClients.get(userID).getSession().getAsyncRemote().sendText(message);
-
-
 
     }
 
