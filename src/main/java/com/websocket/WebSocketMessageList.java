@@ -30,23 +30,28 @@ public class WebSocketMessageList {
         System.out.println(userID+"接入");
         WebSocketUtils.getWebsocketSingleLinks().put(this.userID,this);
 
-        //获取所有历史消息中的最新消息，并发送
+        //检测是否存在链接
+//        if(WebSocketUtils.getWebsocketSingleLinks().getOrDefault(this.userID,null)!=null){
+//
+//        }
+//        //获取所有历史消息中的最新消息，并发送
+//
+//        HashMap<Integer,String> lastMessages= MessageUtils.getLastMessages(this.userID);
+//
+//        String str=JSON.toJSONString(lastMessages);
+//
+//        this.session.getAsyncRemote().sendText(str);
+//
+//        //获取未读消息数目，并发送
+//
+//        HashMap<Integer,Integer> unreadNumber=ChatUtils.getUnreadNumber(this.userID);
+//
+//        String str1=JSON.toJSONString(unreadNumber);
+//
+//        this.session.getAsyncRemote().sendText(str1);
 
-        HashMap<Integer,String> lastMessages= MessageUtils.getLastMessages(this.userID);
-
-        String str=JSON.toJSONString(lastMessages);
-
-        this.session.getAsyncRemote().sendText(str);
-
-        //获取未读消息数目，并发送
-
-        HashMap<Integer,Integer> unreadNumber=ChatUtils.getUnreadNumber(this.userID);
-
-        String str1=JSON.toJSONString(unreadNumber);
-
-        this.session.getAsyncRemote().sendText(str1);
-
-
+        sendMessageListInfo(this.userID);
+//开启一个线程，用于监听数据库是否接收到新消息
     }
 
 
@@ -71,9 +76,7 @@ public class WebSocketMessageList {
     @OnMessage
     public void onMessage(String message, Session session) throws SQLException {
         System.out.println("接受内容:" + message);
-        Couple couple=Couple.parseObject(message);
-    //将未读消息数目清零
-        ChatUtils.clearUnreadNumber(couple.from_id,couple.to_id);
+
     }
 
 
@@ -88,6 +91,25 @@ public class WebSocketMessageList {
         error.printStackTrace();
     }
 
+
+    public static void  sendMessageListInfo(int userID) throws SQLException {
+        //获取所有历史消息中的最新消息，并发送
+
+        HashMap<Integer,String> lastMessages= MessageUtils.getLastMessages(userID);
+
+        String str=JSON.toJSONString(lastMessages);
+
+        WebSocketUtils.getWebsocketSingleLinks().get(userID).session.getAsyncRemote().sendText(str);
+
+
+        //获取未读消息数目，并发送
+
+        HashMap<Integer,Integer> unreadNumber=ChatUtils.getUnreadNumber(userID);
+
+        String str1=JSON.toJSONString(unreadNumber);
+
+        WebSocketUtils.getWebsocketSingleLinks().get(userID).session.getAsyncRemote().sendText(str1);
+    }
 
 
 }

@@ -2,6 +2,7 @@ package com.ConnectionToDB;
 
 import com.alibaba.druid.pool.DruidPooledConnection;
 import org.apache.commons.dbutils.QueryRunner;
+import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
 
 import java.sql.SQLException;
@@ -13,9 +14,9 @@ public class ChatUtils {
     private static ArrayList<Chat> chats=new ArrayList<Chat>();
     public static ArrayList<Chat> getChats(int user_id) throws SQLException {
 
-
         DruidPooledConnection connection=ConnectionToDB.getConn();
         QueryRunner runner=new QueryRunner();
+
 
         String sql="select from_id, to_id, unread_number"
                 +" from chat where to_id = ?";
@@ -53,9 +54,8 @@ public class ChatUtils {
         connection.close();
     }
 
-
     public static void addUnreadNumber(int from_id,int to_id) throws SQLException {
-        ArrayList<Chat> chats=null;
+        Chat chats=null;
 
         DruidPooledConnection connection=ConnectionToDB.getConn();
         QueryRunner runner=new QueryRunner();
@@ -70,12 +70,12 @@ public class ChatUtils {
         String sql="select from_id, to_id, unread_number"
                 +" from chat where from_id = ? and to_id = ?";
 
-        BeanListHandler<Chat> handler=new BeanListHandler<>(Chat.class);
+        BeanHandler<Chat> handler=new BeanHandler<>(Chat.class);
 
-        chats= (ArrayList<Chat>) runner.query(connection,sql,handler,from_id,to_id);
+        chats=runner.query(connection,sql,handler,from_id,to_id);
 
 
-        cnt= chats.get(0).getUnread_number();
+        cnt= chats.getUnread_number();
 
 
 

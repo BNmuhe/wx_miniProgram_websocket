@@ -14,6 +14,7 @@ import java.util.Vector;
 public class WebSocketServer {
     private int userID;
     private Session session;
+    private int targetID;
 
 
     /**
@@ -27,13 +28,10 @@ public class WebSocketServer {
         this.userID=Integer.parseInt(userID);
         int targetID = Integer.parseInt(session.getQueryString());
         Vector<Message> historyMessages = null;
+        this.targetID=targetID;
 
-
-
-        //添加chat记录
-        ChatUtils.deleteChat(targetID,this.userID);
-        ChatUtils.addNewChat(targetID,this.userID);
-
+        System.out.println(userID+"成功连接");
+        ChatUtils.deleteChat(this.userID,targetID);
 
 
         //从数据库获取历史消息
@@ -81,6 +79,11 @@ public class WebSocketServer {
         System.out.println("接受内容:"+message);
 
 
+        //添加chat记录
+
+        ChatUtils.addNewChat(this.userID,targetID);
+
+
         Message message1;
         try {
             message1 =Message.parseObject(message);
@@ -94,10 +97,16 @@ public class WebSocketServer {
         DBMessage dbMessage=new DBMessage();
         dbMessage.MessageToDBMessage(message1);
         MessageUtils.sendToDB(dbMessage);
-        //对方不在线时，存入未读消息数据库
+        //对方不在线时，对方未读消息记录加1
+
         if(WebSocketUtils.getWebsocketClients().getOrDefault(message1.getTo_id(),null)==null){
             //将未读消息记录增加
             ChatUtils.addUnreadNumber(message1.getFrom_id(),message1.getTo_id());
+
+            //判断对方是否登陆程序
+            if(WebSocketUtils.getWebsocketSingleLinks().getOrDefault(message1.getTo_id(),null)!=null){//在线
+                WebSocketMessageList.sendMessageListInfo(message1.getTo_id());
+            }
         }else {
             //消息转发,
             System.out.println("开始转发");
