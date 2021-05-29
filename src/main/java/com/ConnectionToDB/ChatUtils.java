@@ -18,31 +18,31 @@ public class ChatUtils {
         QueryRunner runner=new QueryRunner();
 
 
-        String sql="select from_id, to_id, unread_number"
-                +" from chat where to_id = ?";
+        String sql="select from_id, to_id, unread_number,thing_id"
+                +" from chat where to_id = ? or from_id=?";
 
         BeanListHandler<Chat> handler=new BeanListHandler<>(Chat.class);
 
-        chats= (ArrayList<Chat>) runner.query(connection,sql,handler,user_id);
+        chats= (ArrayList<Chat>) runner.query(connection,sql,handler,user_id,user_id);
 
         connection.close();
         return chats;
     }
 
-    public static void addNewChat(int from_id,int to_id) throws SQLException {
+    public static void addNewChat(int from_id,int to_id,int thing_id) throws SQLException {
         DruidPooledConnection connection=ConnectionToDB.getConn();
         QueryRunner runner=new QueryRunner();
-        String sql="insert chat(from_id,to_id,unread_number) value(?,?,?)";
-        runner.update(connection,sql,from_id,to_id,0);
+        String sql="insert chat(from_id,to_id,unread_number,thing_id) value(?,?,?,?)";
+        runner.update(connection,sql,from_id,to_id,0,thing_id);
         connection.close();
 
     }
 
-    public static void deleteChat(int from_id,int to_id) throws SQLException {
+    public static void deleteChat(int from_id,int to_id, int thing_id) throws SQLException {
         DruidPooledConnection connection=ConnectionToDB.getConn();
         QueryRunner runner=new QueryRunner();
-        String sql="delete from chat where from_id=? and to_id=?";
-        runner.update(connection,sql,from_id,to_id);
+        String sql="delete from chat where from_id=? and to_id=? and thing_id=?";
+        runner.update(connection,sql,from_id,to_id,thing_id);
         connection.close();
     }
 
@@ -52,6 +52,18 @@ public class ChatUtils {
         String sql="update chat set unread_number = 0 where from_id=? and to_id=?";
         runner.update(connection,sql,from_id,to_id);
         connection.close();
+    }
+
+    public static Chat getChat(int from_id, int to_id) throws SQLException {
+        Chat chat=null;
+        DruidPooledConnection connection=ConnectionToDB.getConn();
+        QueryRunner runner=new QueryRunner();
+        String sql="select from_id, to_id, unread_number, thing_id"
+                +" from chat where from_id = ? and to_id = ?";
+        BeanHandler handler=new BeanHandler<>(Chat.class);
+        chat=(Chat) runner.query(connection,sql,handler,from_id,to_id);
+        return chat;
+
     }
 
     public static void addUnreadNumber(int from_id,int to_id) throws SQLException {
@@ -88,21 +100,31 @@ public class ChatUtils {
         connection.close();
     }
 
-    public static HashMap<Integer,Integer> getUnreadNumber(int user_id) throws SQLException {
+    public static HashMap<String,Integer> getUnreadNumber(int user_id) throws SQLException {
         ArrayList<Chat> chats=null;
         chats=getChats(user_id);
 
-        HashMap<Integer,Integer> unreadNumber=new HashMap<Integer, Integer>();
+        HashMap<String,Integer> unreadNumber=new HashMap<String, Integer>();
 
 
         for(Chat chat : chats){
-            unreadNumber.put(chat.getFrom_id(),chat.getUnread_number());
+            unreadNumber.put(chat.getFrom_id()+"",chat.getUnread_number());
         }
 
         return unreadNumber;
     }
 
+    public static HashMap<String,Integer> getThingID(int user_id) throws SQLException {
+        ArrayList<Chat> chats=null;
+        chats=getChats(user_id);
+        HashMap<String,Integer> thingID=new HashMap<String, Integer>();
 
+        for(Chat chat : chats){
+            thingID.put(chat.getFrom_id()+"",chat.getThing_id());
+        }
+
+        return thingID;
+    }
 
 }
 

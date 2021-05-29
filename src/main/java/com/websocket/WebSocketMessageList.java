@@ -27,7 +27,7 @@ public class WebSocketMessageList {
     public void onOpen(@PathParam("userID") String userID, Session session) throws SQLException {
         this.session=session;
         this.userID=Integer.parseInt(userID);
-        System.out.println(userID+"接入");
+        System.out.println(this.getClass().toString()+" log_info:"+userID+"接入");
         WebSocketUtils.getWebsocketSingleLinks().put(this.userID,this);
 
         //检测是否存在链接
@@ -62,7 +62,7 @@ public class WebSocketMessageList {
     @OnClose
     public void onClose(){
         WebSocketUtils.getWebsocketSingleLinks().remove(this.userID);
-        System.out.println(this.userID+"离开界面");
+        System.out.println(this.getClass().toString()+" log_info:"+this.userID+"离开界面");
     }
 
 
@@ -75,7 +75,29 @@ public class WebSocketMessageList {
      */
     @OnMessage
     public void onMessage(String message, Session session) throws SQLException {
-        System.out.println("接受内容:" + message);
+        System.out.println(this.getClass().toString()+" log_info:"+"接受内容:" + message);
+
+        //获取未读消息数目，并发送
+
+        if(message.equals("firstMessage received")){
+            HashMap<String,Integer> unreadNumber=ChatUtils.getUnreadNumber(userID);
+
+            String str1=JSON.toJSONString(unreadNumber);
+
+            WebSocketUtils.getWebsocketSingleLinks().get(userID).session.getAsyncRemote().sendText(str1);
+        }else if(message.equals("unreadNum received")){//获取物品id并发送
+            HashMap<String,Integer> thingId=ChatUtils.getThingID(userID);
+            String str2=JSON.toJSONString(thingId);
+            this.session.getAsyncRemote().sendText(str2);
+        }else if(message.indexOf("delete")==0) {
+            String[] strings=message.split(" ");
+            ChatUtils.deleteChat(Integer.parseInt(strings[1]),Integer.parseInt(strings[2]),Integer.parseInt(strings[3]));
+        }
+        else{
+            System.out.println(this.getClass().toString()+" log_info:"+"未正常发送最新消息");
+        }
+
+
 
     }
 
@@ -87,7 +109,7 @@ public class WebSocketMessageList {
      */
     @OnError
     public void onError(Throwable error){
-        System.out.println("发生错误");
+        System.out.println(this.getClass().toString()+" log_info:"+"发生错误");
         error.printStackTrace();
     }
 
@@ -95,20 +117,16 @@ public class WebSocketMessageList {
     public static void  sendMessageListInfo(int userID) throws SQLException {
         //获取所有历史消息中的最新消息，并发送
 
-        HashMap<Integer,String> lastMessages= MessageUtils.getLastMessages(userID);
+        HashMap<String,String> lastMessages= MessageUtils.getLastMessages(userID);
 
         String str=JSON.toJSONString(lastMessages);
 
         WebSocketUtils.getWebsocketSingleLinks().get(userID).session.getAsyncRemote().sendText(str);
 
 
-        //获取未读消息数目，并发送
 
-        HashMap<Integer,Integer> unreadNumber=ChatUtils.getUnreadNumber(userID);
 
-        String str1=JSON.toJSONString(unreadNumber);
 
-        WebSocketUtils.getWebsocketSingleLinks().get(userID).session.getAsyncRemote().sendText(str1);
     }
 
 

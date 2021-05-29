@@ -15,7 +15,7 @@ public class WebSocketServer {
     private int userID;
     private Session session;
     private int targetID;
-
+    private Chat chat;
 
     /**
      * 连接建立成功调用方法
@@ -30,9 +30,16 @@ public class WebSocketServer {
         Vector<Message> historyMessages = null;
         this.targetID=targetID;
 
-        System.out.println(userID+"成功连接");
-        ChatUtils.deleteChat(this.userID,targetID);
+        chat.setFrom_id(this.userID);
+        chat.setTo_id(targetID);
 
+
+        System.out.println(this.getClass().toString()+" log_info:"+userID+"成功连接");
+
+
+        //清除未读消息
+
+        ChatUtils.clearUnreadNumber(this.userID,targetID);
 
         //从数据库获取历史消息
         try{
@@ -65,7 +72,7 @@ public class WebSocketServer {
     @OnClose
     public void onClose(){
         WebSocketUtils.getWebsocketClients().remove(this.userID);
-        System.out.println(this.userID+"下线");
+        System.out.println(this.getClass().toString()+" log_info:"+this.userID+"下线");
     }
 
 
@@ -76,23 +83,31 @@ public class WebSocketServer {
      */
     @OnMessage
     public void onMessage(String message, Session session) throws SQLException {
-        System.out.println("接受内容:"+message);
+        System.out.println(this.getClass().toString()+" log_info:"+"接受内容:"+message);
+
+        if(message.indexOf("thingId:")==0){
+            String[] strings=message.split(":");
+            chat.setThing_id(Integer.parseInt(strings[1]));
+        }
 
 
-        //添加chat记录
 
-        ChatUtils.addNewChat(this.userID,targetID);
+
 
 
         Message message1;
         try {
             message1 =Message.parseObject(message);
         }catch (Exception e){
-            System.out.println("消息解析错误");
+            System.out.println(this.getClass().toString()+" log_info:"+"消息解析错误");
             return;
         }
 
+        //添加chat记录
 
+        if(ChatUtils.getChat(this.userID,targetID)==null){
+            ChatUtils.addNewChat(this.userID,targetID,chat.getThing_id());
+        }
         //消息存入数据库
         DBMessage dbMessage=new DBMessage();
         dbMessage.MessageToDBMessage(message1);
@@ -109,7 +124,7 @@ public class WebSocketServer {
             }
         }else {
             //消息转发,
-            System.out.println("开始转发");
+            System.out.println(this.getClass().toString()+" log_info:"+"开始转发");
 
             WebSocketUtils.sendMessageByUser(message1.getTo_id(),message);
         }
