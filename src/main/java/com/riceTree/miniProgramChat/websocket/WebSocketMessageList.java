@@ -28,32 +28,9 @@ public class WebSocketMessageList {
     public void onOpen(@PathParam("userID") String userID, Session session) throws SQLException {
         this.session=session;
         this.userID=Integer.parseInt(userID);
-        //System.out.println(this.getClass().toString()+" log_info:"+userID+"接入");
         Logger.SystemLog(this.getClass(),userID+"进入消息列表");
         WebSocketUtils.getWebsocketSingleLinks().put(this.userID,this);
-
-        //检测是否存在链接
-//        if(WebSocketUtils.getWebsocketSingleLinks().getOrDefault(this.userID,null)!=null){
-//
-//        }
-//        //获取所有历史消息中的最新消息，并发送
-//
-//        HashMap<Integer,String> lastMessages= MessageUtils.getLastMessages(this.userID);
-//
-//        String str=JSON.toJSONString(lastMessages);
-//
-//        this.session.getAsyncRemote().sendText(str);
-//
-//        //获取未读消息数目，并发送
-//
-//        HashMap<Integer,Integer> unreadNumber=ChatUtils.getUnreadNumber(this.userID);
-//
-//        String str1=JSON.toJSONString(unreadNumber);
-//
-//        this.session.getAsyncRemote().sendText(str1);
-
         sendMessageListInfo(this.userID);
-//开启一个线程，用于监听数据库是否接收到新消息
     }
 
 
@@ -77,15 +54,11 @@ public class WebSocketMessageList {
      */
     @OnMessage
     public void onMessage(String message, Session session) throws SQLException {
+
         Logger.SystemLog(this.getClass(),"接收消息,来自 "+userID+":"+message);
-
-        //获取未读消息数目，并发送
-
-        if(message.equals("firstMessage received")){
+        if(message.equals("firstMessage received")){//获取未读消息数目，并发送
             HashMap<String,Integer> unreadNumber=ChatUtils.getUnreadNumber(userID);
-
             String str1=JSON.toJSONString(unreadNumber);
-
             WebSocketUtils.getWebsocketSingleLinks().get(userID).session.getAsyncRemote().sendText(str1);
         }else if(message.equals("unreadNum received")){//获取物品id并发送
             HashMap<String,Integer> thingId=ChatUtils.getThingID(userID);
@@ -98,8 +71,6 @@ public class WebSocketMessageList {
         else{
             Logger.SystemLog(this.getClass(),"为正常发送消息至 "+userID);
         }
-
-
 
     }
 
@@ -125,11 +96,6 @@ public class WebSocketMessageList {
 
         WebSocketUtils.getWebsocketSingleLinks().get(userID).session.getAsyncRemote().sendText(str);
 
-
-
-
-
     }
-
 
 }

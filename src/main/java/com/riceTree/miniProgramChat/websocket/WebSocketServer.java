@@ -30,18 +30,11 @@ public class WebSocketServer {
         int targetID = Integer.parseInt(session.getQueryString());
         Vector<Message> historyMessages = null;
         this.targetID=targetID;
-
         chat.setFrom_id(this.userID);
         chat.setTo_id(targetID);
-
-
         Logger.SystemLog(this.getClass(),userID+" 建立聊天连接");
-
-
         //清除未读消息
-
         ChatUtils.clearUnreadNumber(this.userID,targetID);
-
         //从数据库获取历史消息
         try{
             MessageUtils.getFromDB(this.userID, targetID);
@@ -49,9 +42,6 @@ public class WebSocketServer {
         }catch (Exception e){
             e.printStackTrace();
         }
-
-
-
         //将历史消息发送到连接方
         if((!historyMessages.isEmpty())&&historyMessages!=null){
             //将历史消息的vector转换为json数组
@@ -60,11 +50,7 @@ public class WebSocketServer {
 
             MessageUtils.getHistoryMessages().removeAllElements();
         }
-
-
-
         WebSocketUtils.getWebsocketClients().put(this.userID,this);
-        
     }
 
     /**
@@ -90,12 +76,6 @@ public class WebSocketServer {
             String[] strings=message.split(":");
             chat.setThing_id(Integer.parseInt(strings[1]));
         }
-
-
-
-
-
-
         Message message1;
         try {
             message1 =Message.parseObject(message);

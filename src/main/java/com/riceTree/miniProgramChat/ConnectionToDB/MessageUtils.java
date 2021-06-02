@@ -53,27 +53,17 @@ public class MessageUtils {
         connection.close();
         return true;
     }
-
-
-
-
-
-
     public static HashMap<String,String> getLastMessages(int user_id) throws SQLException {
         //获取所有chat(to_id是user_id)
         ArrayList<Chat> chats=ChatUtils.getChats(user_id);
         //根据所有chat来获取对应的最新消息
-
         HashMap<String, String> lastMessages=new HashMap<String, String>();
-
         for(Chat chat : chats){
             lastMessages.put(chat.getFrom_id()+"",getLastMessage(chat.getFrom_id(),chat.getTo_id()));
         }
 
-
         return lastMessages;
     }
-
 
     public static String getLastMessage(int from_id,int to_id) throws SQLException {
         DruidPooledConnection connection=ConnectionToDB.getConn();
@@ -84,7 +74,6 @@ public class MessageUtils {
         BeanListHandler<DBMessage> handler=new BeanListHandler<>(DBMessage.class);
 
         //
-
 
         ArrayList<DBMessage> DBHistoryMessages= (ArrayList<DBMessage>) runner.query(connection,sql,handler,from_id,to_id,from_id,to_id);
 

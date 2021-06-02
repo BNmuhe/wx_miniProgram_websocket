@@ -68,35 +68,17 @@ public class ChatUtils {
 
     public static void addUnreadNumber(int from_id,int to_id) throws SQLException {
         Chat chats=null;
-
         DruidPooledConnection connection=ConnectionToDB.getConn();
         QueryRunner runner=new QueryRunner();
-
-
-
         int cnt;
-
-
-
-
         String sql="select from_id, to_id, unread_number"
                 +" from chat where from_id = ? and to_id = ?";
-
         BeanHandler<Chat> handler=new BeanHandler<>(Chat.class);
-
         chats=runner.query(connection,sql,handler,from_id,to_id);
-
-
         cnt= chats.getUnread_number();
-
-
-
-
         cnt++;
         String sql1="update chat set unread_number = ? where from_id=? and to_id=?";
         runner.update(connection,sql1,cnt,from_id,to_id);
-
-
         connection.close();
     }
 
@@ -122,7 +104,6 @@ public class ChatUtils {
         for(Chat chat : chats){
             thingID.put(chat.getFrom_id()+"",chat.getThing_id());
         }
-
         return thingID;
     }
 
